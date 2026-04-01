@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Empathy Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0f0e0b;
+  --paper: #f5f2eb;
+  --cream: #ede9df;
+  --accent: #c8410a;
+  --accent2: #1a6b4a;
+  --muted: #8a8578;
+  --border: #d4cfc4;
+  --joy: #e8900a;
+  --sadness: #3a6bcc;
+  --anger: #c8220a;
+  --fear: #7a4a9c;
+  --surprise: #0a9c8a;
+  --inquisitive: #4a7a4c;
+  --neutral: #7a7268;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'DM Mono', monospace;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+/* ================= UI ENHANCEMENT START ================= */
+
+* {
+  transition: all 0.2s ease;
+}
+
+/* Background upgrade */
+body {
+  background: linear-gradient(135deg, #f5f2eb 0%, #ebe6dc 100%);
+}
+
+/* Glass effect panels */
+.left-panel, .right-panel {
+  backdrop-filter: blur(10px);
+  background: rgba(255,255,255,0.5);
+}
+
+/* Header polish */
+header {
+  backdrop-filter: blur(8px);
+  background: rgba(245, 242, 235, 0.85);
+}
+
+/* Card feel */
+textarea,
+.audio-block,
+.emotion-display,
+.param-card,
+.ssml-block {
+  border-radius: 14px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+}
+
+/* Emotion hover effect */
+.emotion-display:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+/* Primary button upgrade */
+.btn-primary {
+  background: linear-gradient(135deg, #0f0e0b, #2a2926);
+  border-radius: 10px;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+
+/* Secondary button polish */
+.btn-secondary {
+  border-radius: 10px;
+}
+
+.btn-secondary:hover {
+  transform: translateY(-1px);
+}
+
+/* Example pills upgrade */
+.example-pill {
+  border-radius: 20px;
+  padding: 0.35rem 1rem;
+}
+
+.example-pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* ================= UI ENHANCEMENT END ================= */
+/* HEADER */
+header {
+  border-bottom: 1.5px solid var(--ink);
+  padding: 1.4rem 2.5rem;
+  display: flex;
+  align-items: baseline;
+  gap: 1.5rem;
+  background: var(--paper);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.6rem;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.logo span {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.tagline {
+  font-size: 0.72rem;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-left: 1px solid var(--border);
+  padding-left: 1.5rem;
+}
+
+.version-pill {
+  margin-left: auto;
+  font-size: 0.65rem;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0.25rem 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* MAIN LAYOUT */
+main {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  min-height: calc(100vh - 65px);
+}
+
+/* LEFT PANEL */
+.left-panel {
+  padding: 2.5rem;
+  border-right: 1.5px solid var(--ink);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.section-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.6rem;
+}
+
+/* TEXTAREA */
+.input-block {
+  position: relative;
+}
+
+textarea {
+  width: 100%;
+  height: 180px;
+  background: var(--cream);
+  border: 1.5px solid var(--ink);
+  color: var(--ink);
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.25rem;
+  line-height: 1.55;
+  padding: 1.2rem 1.4rem;
+  resize: none;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+textarea:focus { border-color: var(--accent); }
+textarea::placeholder { color: var(--muted); font-style: italic; }
+
+.char-count {
+  position: absolute;
+  bottom: 0.6rem;
+  right: 0.8rem;
+  font-size: 0.65rem;
+  color: var(--muted);
+}
+
+/* EXAMPLE PILLS */
+.examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.example-pill {
+  font-size: 0.7rem;
+  padding: 0.3rem 0.8rem;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: 'DM Mono', monospace;
+  transition: all 0.15s;
+  letter-spacing: 0.02em;
+}
+
+.example-pill:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+  background: var(--cream);
+}
+
+/* BUTTONS */
+.btn-row {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.btn-primary {
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  padding: 0.85rem 2rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary:hover { background: var(--accent); }
+.btn-primary:disabled { background: var(--muted); cursor: not-allowed; }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+  padding: 0.85rem 1.2rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover { background: var(--ink); color: var(--paper); }
+
+/* LOADING DOTS */
+.loading-dots {
+  display: none;
+  gap: 0.3rem;
+  align-items: center;
+}
+
+.loading-dots.active { display: flex; }
+
+.dot {
+  width: 5px; height: 5px;
+  background: var(--paper);
+  border-radius: 50%;
+  animation: blink 1.2s infinite;
+}
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes blink {
+  0%, 80%, 100% { opacity: 0.3; }
+  40% { opacity: 1; }
+}
+
+/* AUDIO PLAYER */
+.audio-block {
+  border: 1.5px solid var(--ink);
+  background: var(--cream);
+  padding: 1.2rem 1.4rem;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.audio-block.visible {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.audio-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.8rem;
+}
+
+audio { width: 100%; height: 36px; outline: none; }
+
+audio::-webkit-media-controls-panel { background: var(--cream); }
+
+.dl-link {
+  display: inline-block;
+  margin-top: 0.6rem;
+  font-size: 0.68rem;
+  color: var(--muted);
+  text-decoration: none;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.dl-link:hover { color: var(--accent); border-color: var(--accent); }
+
+/* SSML BLOCK */
+.ssml-block {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  padding: 1rem;
+  font-size: 0.7rem;
+  line-height: 1.6;
+  white-space: pre;
+  overflow-x: auto;
+  color: var(--muted);
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.ssml-block.open { max-height: 200px; }
+
+.ssml-toggle {
+  background: none;
+  border: none;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--muted);
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ssml-toggle:hover { color: var(--ink); }
+
+/* RIGHT PANEL */
+.right-panel {
+  padding: 2.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* EMOTION DISPLAY */
+.emotion-display {
+  text-align: center;
+  padding: 2rem 1rem;
+  border: 1.5px solid var(--ink);
+  background: var(--cream);
+  position: relative;
+  overflow: hidden;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.emotion-bg {
+  position: absolute;
+  inset: 0;
+  opacity: 0.06;
+  transition: background 0.5s ease;
+}
+
+.emotion-icon {
+  font-size: 2.8rem;
+  line-height: 1;
+  transition: all 0.4s ease;
+}
+
+.emotion-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+  text-transform: capitalize;
+  transition: color 0.4s ease;
+}
+
+.emotion-desc {
+  font-size: 0.72rem;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+.intensity-bar-wrap {
+  width: 100%;
+  padding: 0 0.2rem;
+}
+
+.intensity-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.62rem;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+
+.intensity-bar-bg {
+  height: 4px;
+  background: var(--border);
+  width: 100%;
+}
+
+.intensity-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  width: 0%;
+  transition: width 0.6s cubic-bezier(.17,.67,.35,1.1), background 0.4s;
+}
+
+/* SCORE CHART */
+.score-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.score-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 36px;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.score-label {
+  font-size: 0.68rem;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  text-transform: capitalize;
+}
+
+.score-bar-bg {
+  height: 3px;
+  background: var(--border);
+}
+
+.score-bar-fill {
+  height: 100%;
+  transition: width 0.5s ease;
+  border-radius: 1px;
+}
+
+.score-val {
+  font-size: 0.65rem;
+  color: var(--muted);
+  text-align: right;
+}
+
+/* VOICE PARAMS */
+.params-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.8rem;
+}
+
+.param-card {
+  border: 1px solid var(--border);
+  padding: 0.8rem;
+  text-align: center;
+  background: var(--cream);
+}
+
+.param-name {
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+}
+
+.param-value {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.3rem;
+  letter-spacing: -0.02em;
+}
+
+.param-unit {
+  font-size: 0.6rem;
+  color: var(--muted);
+}
+
+/* STATUS LOG */
+.status-log {
+  font-size: 0.68rem;
+  color: var(--muted);
+  line-height: 2;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+  min-height: 3rem;
+}
+
+.status-entry {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.status-ts {
+  color: var(--border);
+  min-width: 5rem;
+}
+
+/* EMOTION COLOR CLASSES */
+.color-joy        { color: var(--joy); }
+.color-sadness    { color: var(--sadness); }
+.color-anger      { color: var(--anger); }
+.color-fear       { color: var(--fear); }
+.color-surprise   { color: var(--surprise); }
+.color-inquisitive { color: var(--inquisitive); }
+.color-neutral    { color: var(--neutral); }
+
+.bg-joy        { background: var(--joy); }
+.bg-sadness    { background: var(--sadness); }
+.bg-anger      { background: var(--anger); }
+.bg-fear       { background: var(--fear); }
+.bg-surprise   { background: var(--surprise); }
+.bg-inquisitive { background: var(--inquisitive); }
+.bg-neutral    { background: var(--neutral); }
+
+/* RESPONSIVE */
+@media (max-width: 800px) {
+  main { grid-template-columns: 1fr; }
+  .right-panel { border-top: 1.5px solid var(--ink); }
+}
+
+/* INITIAL STATE HINT */
+.idle-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  padding: 2rem 0;
+}
+
+.idle-hint-icon { font-size: 2rem; opacity: 0.4; }
+
+/* WAVE ANIMATION on audio block */
+.wave-lines {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 20px;
+  margin-bottom: 0.5rem;
+}
+
+.wave-line {
+  width: 3px;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 1px;
+  animation: wave 1s infinite ease-in-out;
+  transform-origin: bottom;
+}
+
+.wave-line:nth-child(2) { animation-delay: 0.1s; }
+.wave-line:nth-child(3) { animation-delay: 0.2s; }
+.wave-line:nth-child(4) { animation-delay: 0.3s; }
+.wave-line:nth-child(5) { animation-delay: 0.15s; }
+
+@keyframes wave {
+  0%, 100% { transform: scaleY(0.3); }
+  50% { transform: scaleY(1); }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Empathy <span>Engine</span></div>
+  <div class="tagline">Emotionally Intelligent Text-to-Speech</div>
+</header>
+
+<main>
+  <!-- LEFT: Input + Audio -->
+  <div class="left-panel">
+
+    <div class="input-block">
+      <div class="section-label">Input Text</div>
+      <textarea id="inputText" placeholder="Type something... anything. Let the engine feel it." maxlength="500"></textarea>
+      <div class="char-count"><span id="charCount">0</span>/500</div>
+    </div>
+
+    <div>
+      <div class="section-label">Quick Examples</div>
+      <div class="examples" id="examples">
+        <button class="example-pill" data-text="I just got promoted! This is the best day of my entire life, I'm so incredibly happy!">🎉 Overjoyed</button>
+        <button class="example-pill" data-text="I lost my dog today. The house feels so empty without him. I don't know what to do.">😢 Grief</button>
+        <button class="example-pill" data-text="This is absolutely unacceptable! I've been waiting for THREE hours and nobody has helped me!">😤 Furious</button>
+        <button class="example-pill" data-text="Wait, did you just say they cancelled the whole project? I can't believe it.">😲 Shocked</button>
+        <button class="example-pill" data-text="I'm not sure I understand... could you explain how this process actually works?">🤔 Curious</button>
+        <button class="example-pill" data-text="I'm a little nervous about the presentation tomorrow. What if something goes wrong?">😰 Anxious</button>
+        <button class="example-pill" data-text="The meeting has been rescheduled to 3pm on Thursday.">📋 Neutral</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="btn-row">
+        <button class="btn-primary" id="synthesizeBtn" onclick="synthesize()">
+          <span class="btn-label">▶ Synthesize Speech</span>
+          <span class="loading-dots" id="loadingDots">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </span>
+        </button>
+        <button class="btn-secondary" onclick="analyzeOnly()">Analyze Only</button>
+        <button class="btn-secondary" onclick="clearAll()">Clear</button>
+      </div>
+    </div>
+
+    <div class="audio-block" id="audioBlock">
+      <div class="audio-label">Generated Audio Output</div>
+      <div class="wave-lines" id="waveLines">
+        <div class="wave-line"></div>
+        <div class="wave-line"></div>
+        <div class="wave-line"></div>
+        <div class="wave-line"></div>
+        <div class="wave-line"></div>
+      </div>
+      <audio id="audioPlayer" controls></audio>
+      <br>
+      <a id="downloadLink" class="dl-link" download>↓ Download WAV file</a>
+    </div>
+
+    <div>
+      <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.4rem;">
+        <div class="section-label" style="margin:0">SSML Markup</div>
+        <button class="ssml-toggle" onclick="toggleSsml()">show / hide</button>
+      </div>
+      <div class="ssml-block" id="ssmlBlock">&lt;!-- Synthesize text to see SSML --&gt;</div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: Analysis -->
+  <div class="right-panel">
+
+    <div>
+      <div class="section-label">Detected Emotion</div>
+      <div class="emotion-display" id="emotionDisplay">
+        <div class="emotion-bg" id="emotionBg"></div>
+        <div class="idle-hint" id="idleHint">
+          <div class="idle-hint-icon">〰</div>
+          <div>Awaiting input</div>
+        </div>
+        <div id="emotionContent" style="display:none; flex-direction:column; align-items:center; gap:0.6rem; width:100%;">
+          <div class="emotion-icon" id="emotionIcon">🙂</div>
+          <div class="emotion-name" id="emotionName">neutral</div>
+          <div class="emotion-desc" id="emotionDesc">Calm and balanced</div>
+          <div class="intensity-bar-wrap">
+            <div class="intensity-label">
+              <span>INTENSITY</span>
+              <span id="intensityPct">0%</span>
+            </div>
+            <div class="intensity-bar-bg">
+              <div class="intensity-bar-fill" id="intensityFill"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Emotion Scores</div>
+      <div class="score-chart" id="scoreChart">
+        <!-- generated by JS -->
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Voice Parameters</div>
+      <div class="params-grid" id="paramsGrid">
+        <div class="param-card">
+          <div class="param-name">Rate</div>
+          <div class="param-value" id="paramRate">—</div>
+          <div class="param-unit">× normal</div>
+        </div>
+        <div class="param-card">
+          <div class="param-name">Pitch</div>
+          <div class="param-value" id="paramPitch">—</div>
+          <div class="param-unit">semitones</div>
+        </div>
+        <div class="param-card">
+          <div class="param-name">Volume</div>
+          <div class="param-value" id="paramVol">—</div>
+          <div class="param-unit">× normal</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="status-log" id="statusLog">
+      <div class="status-entry">
+        <span class="status-ts">—</span>
+        <span>Engine ready. Enter text and click Synthesize.</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+const EMOTION_META = {
+  joy:        { icon: '😄', color: '#e8900a' },
+  sadness:    { icon: '😢', color: '#3a6bcc' },
+  anger:      { icon: '😠', color: '#c8220a' },
+  fear:       { icon: '😰', color: '#7a4a9c' },
+  surprise:   { icon: '😲', color: '#0a9c8a' },
+  inquisitive:{ icon: '🤔', color: '#4a7a4c' },
+  neutral:    { icon: '😐', color: '#7a7268' },
+};
+
+const SCORE_ORDER = ['joy','sadness','anger','fear','surprise','inquisitive','neutral'];
+
+let ssmlOpen = false;
+
+// ---- Textarea char counter ----
+document.getElementById('inputText').addEventListener('input', function() {
+  document.getElementById('charCount').textContent = this.value.length;
+});
+
+// ---- Example pills ----
+document.querySelectorAll('.example-pill').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const ta = document.getElementById('inputText');
+    ta.value = btn.dataset.text;
+    ta.dispatchEvent(new Event('input'));
+    ta.focus();
+  });
+});
+
+function log(msg) {
+  const ts = new Date().toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const el = document.getElementById('statusLog');
+  const entry = document.createElement('div');
+  entry.className = 'status-entry';
+  entry.innerHTML = `<span class="status-ts">${ts}</span><span>${msg}</span>`;
+  el.innerHTML = '';
+  el.appendChild(entry);
+}
+
+function updateEmotionDisplay(data) {
+  const emotion = data.emotion;
+  const intensity = data.intensity;
+  const meta = EMOTION_META[emotion] || EMOTION_META.neutral;
+
+  document.getElementById('idleHint').style.display = 'none';
+  const content = document.getElementById('emotionContent');
+  content.style.display = 'flex';
+
+  document.getElementById('emotionIcon').textContent = meta.icon;
+  document.getElementById('emotionName').textContent = emotion;
+  document.getElementById('emotionName').style.color = meta.color;
+  document.getElementById('emotionDesc').textContent = data.voice_params?.description || '';
+
+  const pct = Math.round(intensity * 100);
+  document.getElementById('intensityPct').textContent = pct + '%';
+  document.getElementById('intensityFill').style.width = pct + '%';
+  document.getElementById('intensityFill').style.background = meta.color;
+
+  document.getElementById('emotionBg').style.background = meta.color;
+
+  // Scores
+  const chart = document.getElementById('scoreChart');
+  chart.innerHTML = '';
+  const maxScore = Math.max(...Object.values(data.scores), 1);
+  SCORE_ORDER.forEach(em => {
+    const val = data.scores[em] || 0;
+    const pctBar = Math.round((val / maxScore) * 100);
+    const m = EMOTION_META[em];
+    const row = document.createElement('div');
+    row.className = 'score-row';
+    row.innerHTML = `
+      <div class="score-label">${em}</div>
+      <div class="score-bar-bg">
+        <div class="score-bar-fill bg-${em}" style="width:${pctBar}%; background:${m.color}"></div>
+      </div>
+      <div class="score-val">${val.toFixed(2)}</div>
+    `;
+    chart.appendChild(row);
+  });
+
+  // Voice params
+  if (data.voice_params) {
+    const vp = data.voice_params;
+    document.getElementById('paramRate').textContent = vp.rate.toFixed(2);
+    document.getElementById('paramPitch').textContent = (vp.pitch_st >= 0 ? '+' : '') + vp.pitch_st.toFixed(1);
+    document.getElementById('paramVol').textContent = vp.volume.toFixed(2);
+  }
+}
+
+async function analyzeOnly() {
+  const text = document.getElementById('inputText').value.trim();
+  if (!text) { log('⚠ Please enter some text first.'); return; }
+
+  log('Analyzing emotion...');
+  try {
+    const res = await fetch('/analyze', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({text})
+    });
+    const data = await res.json();
+    if (data.error) { log('✗ ' + data.error); return; }
+    updateEmotionDisplay(data);
+    log(`✓ Detected: ${data.emotion} (intensity ${(data.intensity*100).toFixed(0)}%)`);
+  } catch(e) {
+    log('✗ Network error: ' + e.message);
+  }
+}
+
+async function synthesize() {
+  const text = document.getElementById('inputText').value.trim();
+  if (!text) { log('⚠ Please enter some text first.'); return; }
+
+  const btn = document.getElementById('synthesizeBtn');
+  btn.disabled = true;
+  btn.querySelector('.btn-label').style.display = 'none';
+  document.getElementById('loadingDots').classList.add('active');
+
+  log('Detecting emotion and synthesizing speech...');
+
+  try {
+    const res = await fetch('/synthesize', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({text})
+    });
+    const data = await res.json();
+    if (data.error) { log('✗ ' + data.error); return; }
+
+    updateEmotionDisplay(data);
+
+    // Update audio player
+    const player = document.getElementById('audioPlayer');
+    player.src = data.audio_url + '?t=' + Date.now();
+    player.load();
+
+    const dlLink = document.getElementById('downloadLink');
+    dlLink.href = data.audio_url;
+    dlLink.download = `empathy-${data.emotion}-${data.audio_filename}`;
+
+    document.getElementById('audioBlock').classList.add('visible');
+
+    // SSML
+    document.getElementById('ssmlBlock').textContent = data.ssml || '';
+
+    log(`✓ Synthesized | ${data.emotion} at ${(data.intensity*100).toFixed(0)}% intensity | ${data.voice_params.description}`);
+
+    // Auto-play
+    setTimeout(() => player.play().catch(() => {}), 200);
+
+  } catch(e) {
+    log('✗ Error: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.querySelector('.btn-label').style.display = 'inline';
+    document.getElementById('loadingDots').classList.remove('active');
+  }
+}
+
+function toggleSsml() {
+  ssmlOpen = !ssmlOpen;
+  document.getElementById('ssmlBlock').classList.toggle('open', ssmlOpen);
+}
+
+function clearAll() {
+  document.getElementById('inputText').value = '';
+  document.getElementById('charCount').textContent = '0';
+  document.getElementById('audioBlock').classList.remove('visible');
+  document.getElementById('audioPlayer').src = '';
+  document.getElementById('idleHint').style.display = 'flex';
+  document.getElementById('emotionContent').style.display = 'none';
+  document.getElementById('emotionBg').style.background = 'transparent';
+  document.getElementById('scoreChart').innerHTML = '';
+  document.getElementById('paramRate').textContent = '—';
+  document.getElementById('paramPitch').textContent = '—';
+  document.getElementById('paramVol').textContent = '—';
+  document.getElementById('ssmlBlock').textContent = '<!-- Synthesize text to see SSML -->';
+  document.getElementById('ssmlBlock').classList.remove('open');
+  ssmlOpen = false;
+  log('Cleared. Engine ready.');
+}
+</script>
+</body>
+</html>
