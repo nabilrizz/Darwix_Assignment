@@ -16,7 +16,6 @@ The Empathy Engine analyzes the emotional content of any text and dynamically mo
 | **SSML Output** | Full Speech Synthesis Markup Language generation |
 | **Web UI** | Clean, live-updating browser interface with embedded player |
 | **CLI** | Interactive or single-shot terminal usage |
-| **Fallback Chain** | espeak → gTTS → pyttsx3 → tone WAV (always produces audio) |
 
 ---
 
@@ -25,8 +24,8 @@ The Empathy Engine analyzes the emotional content of any text and dynamically mo
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/empathy-engine.git
-cd empathy-engine
+git clone https://github.com/nabilrizz/Empathy-Engine
+cd Darwix
 
 python -m venv venv
 source venv/bin/activate          # Windows: venv\Scripts\activate
@@ -187,7 +186,3 @@ Full pipeline — emotion detection + audio generation.
 - **SSML output** — Even when using local TTS, SSML is generated so the project is ready to plug into cloud TTS APIs for production-quality voices.
 
 ---
-
-## 📄 License
-
-MIT License — free to use, modify, and distribute.
